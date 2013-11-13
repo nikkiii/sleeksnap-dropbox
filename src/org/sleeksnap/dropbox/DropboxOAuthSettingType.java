@@ -1,10 +1,8 @@
 package org.sleeksnap.dropbox;
 
-import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +18,7 @@ import org.nikkii.embedhttp.impl.HttpRequest;
 import org.nikkii.embedhttp.impl.HttpResponse;
 import org.nikkii.embedhttp.impl.HttpStatus;
 import org.sleeksnap.uploaders.settings.UploaderSettingType;
+import org.sleeksnap.util.Util;
 
 import com.dropbox.core.DbxAccountInfo;
 import com.dropbox.core.DbxAppInfo;
@@ -42,7 +41,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					dropboxAuthentication(button);
-				} catch (IOException e1) {
+				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
 			}
@@ -51,7 +50,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 		return button;
 	}
 
-	protected void dropboxAuthentication(final JComponent component) throws IOException {
+	protected void dropboxAuthentication(final JComponent component) throws Exception {
 		DbxAppInfo appInfo = new DbxAppInfo(DropboxUploader.APP_KEY, DropboxUploader.APP_SECRET);
 
 		String redirectUri = "http://localhost:8581/dropbox-auth-finish";
@@ -83,7 +82,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 
 		String authUrl = webAuth.start();
 
-		openURL(new URL(authUrl));
+		Util.openURL(new URL(authUrl));
 
 		final HttpServer server = new HttpServer(8581);
 		server.addRequestHandler(new HttpRequestHandler() {
@@ -114,7 +113,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 		server.start();
 	}
 
-	public void authorized(JComponent component, DbxAuthFinish authFinish) {
+	public void authorized(final JComponent component, DbxAuthFinish authFinish) {
 		try {
 			DbxClient client = new DbxClient(DropboxUploader.REQUEST_CONFIG, authFinish.accessToken);
 
@@ -127,22 +126,12 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 
 			new Thread(new Runnable() {
 				public void run() {
-					JOptionPane.showMessageDialog(null, "Thank you for authorizing " + info.displayName + "! You can now use Dropbox to upload Text, Files, and Screenshots after you confirm the settings!", "Thank you", JOptionPane.INFORMATION_MESSAGE);
+					component.requestFocus();
+					JOptionPane.showMessageDialog(component, "Thank you for authorizing " + info.displayName + "! You can now use Dropbox to upload Text, Files, and Screenshots after you confirm the settings!", "Thank you", JOptionPane.INFORMATION_MESSAGE);
 				}
 			}).start();
 		} catch (DbxException e) {
 			e.printStackTrace();
-		}
-	}
-
-	public static void openURL(URL url) {
-		try {
-			Desktop desktop = Desktop.getDesktop();
-			if (desktop.isSupported(Desktop.Action.BROWSE)) {
-				desktop.browse(url.toURI());
-			}
-		} catch (Exception e) {
-
 		}
 	}
 
