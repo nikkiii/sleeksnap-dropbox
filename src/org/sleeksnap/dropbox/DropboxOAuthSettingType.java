@@ -104,7 +104,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 					}
 				}
 				try {
-					return new HttpResponse(HttpStatus.OK, "Thank you for authenticating! You may now close this window and return to Sleeksnap.");
+					return new HttpResponse(HttpStatus.OK, "Thank you for authenticating! You may now close this window and return to Sleeksnap.<br />Alternatively, this window will auto close in 30 seconds.<script>setTimeout(window.close, 30000);</script>");
 				} finally {
 					server.stop();
 				}
@@ -126,7 +126,7 @@ public class DropboxOAuthSettingType implements UploaderSettingType {
 
 			new Thread(new Runnable() {
 				public void run() {
-					component.requestFocus();
+					component.getParent().requestFocus();
 					JOptionPane.showMessageDialog(component, "Thank you for authorizing " + info.displayName + "! You can now use Dropbox to upload Text, Files, and Screenshots after you confirm the settings!", "Thank you", JOptionPane.INFORMATION_MESSAGE);
 				}
 			}).start();
